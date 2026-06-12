@@ -42,7 +42,7 @@ export default async function RevenuePage({ params }: PageProps) {
   })
 
   // Format date fields for client boundary compatibility
-  const payments = paymentsRaw.map((payment) => ({
+  const payments = paymentsRaw.map((payment: any) => ({
     ...payment,
     paidAt: payment.paidAt.toISOString()
   }))

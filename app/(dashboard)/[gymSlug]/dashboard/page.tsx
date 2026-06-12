@@ -130,7 +130,7 @@ export default async function DashboardPage({ params }: PageProps) {
 
   // Format and sort actionRequiredMembers: Expired first, then by nearest expiry
   const actionRequiredMembers = actionRequiredMembersRaw
-    .map(member => ({
+    .map((member: any) => ({
       ...member,
       expiryDate: member.expiryDate.toISOString()
     }))

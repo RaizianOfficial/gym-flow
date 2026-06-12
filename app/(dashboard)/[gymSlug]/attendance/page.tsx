@@ -57,7 +57,7 @@ export default async function AttendancePage({ params, searchParams }: PageProps
   })
 
   // Format Date objects to ISO strings for client boundaries
-  const attendance = attendanceRaw.map((item) => ({
+  const attendance = attendanceRaw.map((item: any) => ({
     ...item,
     createdAt: item.createdAt.toISOString()
   }))

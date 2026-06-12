@@ -53,7 +53,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
     take: 5
   })
 
-  const notifications = notificationsRaw.map(n => ({
+  const notifications = notificationsRaw.map((n: any) => ({
     ...n,
     createdAt: n.createdAt.toISOString()
   }))
