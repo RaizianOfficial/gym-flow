@@ -2,32 +2,27 @@ import type { NextAuthConfig } from "next-auth"
 
 export const authConfig = {
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   session: {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
-      const t = token as any;
-      if (user) {
-        t.id = user.id;
-        t.role = (user as any).role;
-        t.gymId = (user as any).gymId;
-        t.gymSlug = (user as any).gymSlug;
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user
+      const isOnDashboard = nextUrl.pathname.includes('/dashboard')
+      const isPublic = ['/login', '/register', '/attend'].some(p => 
+        nextUrl.pathname.startsWith(p)
+      )
+      
+      if (isPublic) return true
+      if (isOnDashboard && !isLoggedIn) return false
+      if (isLoggedIn && nextUrl.pathname === '/login') {
+        const gymSlug = (auth?.user as any)?.gymSlug
+        return Response.redirect(new URL(`/${gymSlug}/dashboard`, nextUrl))
       }
-      return token;
-    },
-    async session({ session, token }) {
-      const t = token as any;
-      if (t && session.user) {
-        (session.user as any).id = t.id;
-        (session.user as any).role = t.role;
-        (session.user as any).gymId = t.gymId;
-        (session.user as any).gymSlug = t.gymSlug;
-      }
-      return session;
+      return true
     },
   },
-  providers: [], // Configured dynamically in lib/auth.ts
+  providers: [],
 } satisfies NextAuthConfig
