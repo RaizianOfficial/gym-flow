@@ -5,6 +5,18 @@ import AttendanceClient from "@/components/attendance/AttendanceClient"
 import { generateDailyToken } from "@/lib/utils"
 import QRCode from "qrcode"
 
+interface AttendanceWithMember {
+  id: string
+  memberId: string
+  gymId: string
+  date: Date
+  createdAt: Date
+  member: {
+    fullName: string
+    phone: string
+  }
+}
+
 interface PageProps {
   params: Promise<{ gymSlug: string }>
   searchParams: Promise<{ date?: string }>
@@ -57,7 +69,7 @@ export default async function AttendancePage({ params, searchParams }: PageProps
   })
 
   // Format Date objects to ISO strings for client boundaries
-  const attendance = attendanceRaw.map((item: any) => ({
+  const attendance = attendanceRaw.map((item: AttendanceWithMember) => ({
     ...item,
     createdAt: item.createdAt.toISOString()
   }))
