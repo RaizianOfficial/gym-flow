@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Gym {
+  id              String         @id @default(uuid())
+  name            String
+  slug            String         @unique
+  ownerEmail      String
+  plan            String         // "FREE" | "PRO"
+  createdAt       DateTime       @default(now())
+  whatsappEnabled Boolean        @default(false) // placeholder
+  maxBranches     Int            @default(1)     // placeholder
+  
+  users           User[]
+  members         Member[]
+  payments        Payment[]
+  attendances     Attendance[]
+  notifications   Notification[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   // "OWNER" | "MEMBER"
+  gymId     String?
+  gym       Gym?     @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id             String         @id @default(uuid())
+  gymId          String
+  gym            Gym            @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  fullName       String
+  phone          String
+  email          String?        // Link to User login
+  membershipPlan String         // "MONTHLY" | "QUARTERLY" | "HALFYEARLY" | "ANNUAL"
+  startDate      DateTime
+  expiryDate     DateTime
+  paymentStatus  String         // "PAID" | "PENDING" | "OVERDUE"
+  status         String         // "ACTIVE" | "EXPIRING_SOON" | "EXPIRED"
+  notes          String?
+  createdAt      DateTime       @default(now())
+  aiRenewalScore Float?         // placeholder
+  
+  attendance     Attendance[]
+  payments       Payment[]
+  notifications  Notification[]
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  gymId     String
+  gym       Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  date      DateTime // Date for the attendance record
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, date])
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  gymId     String
+  gym       Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  amount    Float
+  plan      String   // "MONTHLY" | "QUARTERLY" | "HALFYEARLY" | "ANNUAL"
+  paidAt    DateTime @default(now())
+  note      String?
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  gymId     String
+  gym       Gym      @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  type      String   // "EXPIRY_5" | "EXPIRY_3" | "EXPIRY_1" | "EXPIRED"
+  seen      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Branch {
+  id    String @id @default(uuid())
+  gymId String
+  name  String
+}
+
+model Trainer {
+  id    String @id @default(uuid())
+  gymId String
+  name  String
+}
+
+model AIRenewalPrediction {
+  id       String @id @default(uuid())
+  memberId String
+}
+
+model WhatsAppConfig {
+  id       String @id @default(uuid())
+  gymId    String @unique
+  apiToken String
+}
