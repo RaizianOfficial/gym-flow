@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { revalidatePath } from "next/cache"
 import { generateDailyToken } from "@/lib/utils"
+import bcrypt from "bcryptjs"
 
 // Helper to map duration days to plan names
 function mapDaysToPlanName(days: number): string {
@@ -94,6 +95,25 @@ export async function addMember(formData: {
         notes: notes || null
       }
     })
+
+    // Auto-create login account for the member if email is provided
+    if (email) {
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      })
+
+      if (!existingUser) {
+        const hashedPassword = await bcrypt.hash(phone, 10)
+        await prisma.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            role: "MEMBER",
+            gymId: user.gymId
+          }
+        })
+      }
+    }
 
     // Log payment if status is PAID
     if (paymentStatus === "PAID") {
