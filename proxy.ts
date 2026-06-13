@@ -13,7 +13,8 @@ export default auth((req) => {
   // Public routes
   if (pathname.startsWith('/login') || pathname.startsWith('/register') || pathname.startsWith('/attend')) {
     if (isLoggedIn && pathname.startsWith('/login') && gymSlug) {
-      return NextResponse.redirect(new URL(`/${gymSlug}/dashboard`, req.url))
+      const dest = user?.role === 'MEMBER' ? `/${gymSlug}/me` : `/${gymSlug}/dashboard`
+      return NextResponse.redirect(new URL(dest, req.url))
     }
     return NextResponse.next()
   }
@@ -23,10 +24,23 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // Tenant isolation - prevent accessing other gym's dashboard
+  // Tenant & Role isolation
   const slugMatch = pathname.match(/^\/([^\/]+)\//)
-  if (slugMatch && slugMatch[1] && slugMatch[1] !== gymSlug) {
-    if (gymSlug) {
+  if (slugMatch && slugMatch[1]) {
+    const slugInPath = slugMatch[1]
+    
+    if (slugInPath !== gymSlug) {
+      const dest = user?.role === 'MEMBER' ? `/${gymSlug}/me` : `/${gymSlug}/dashboard`
+      return NextResponse.redirect(new URL(dest, req.url))
+    }
+
+    // Redirect member to /me if trying to access other pages
+    if (user?.role === 'MEMBER' && !pathname.startsWith(`/${gymSlug}/me`)) {
+      return NextResponse.redirect(new URL(`/${gymSlug}/me`, req.url))
+    }
+
+    // Redirect owner to /dashboard if trying to access /me
+    if (user?.role === 'OWNER' && pathname.startsWith(`/${gymSlug}/me`)) {
       return NextResponse.redirect(new URL(`/${gymSlug}/dashboard`, req.url))
     }
   }

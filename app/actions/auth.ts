@@ -92,6 +92,7 @@ export async function loginUser(formData: {
   }
 
   let gymSlug = ""
+  let userRole = ""
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -103,6 +104,7 @@ export async function loginUser(formData: {
     }
 
     gymSlug = user.gym?.slug || ""
+    userRole = user.role
     if (!gymSlug) {
       return { error: "This account is not associated with any gym tenant." }
     }
@@ -112,10 +114,11 @@ export async function loginUser(formData: {
   }
 
   try {
+    const redirectTo = userRole === "MEMBER" ? `/${gymSlug}/me` : `/${gymSlug}/dashboard`
     await signIn("credentials", {
       email,
       password,
-      redirectTo: `/${gymSlug}/dashboard`
+      redirectTo
     })
     return { success: true }
   } catch (error) {
