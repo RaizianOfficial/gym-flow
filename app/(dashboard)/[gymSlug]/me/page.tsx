@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Badge from "@/components/ui/badge"
@@ -10,13 +10,11 @@ interface PageProps {
 
 export default async function MemberPortalPage({ params }: PageProps) {
   const { gymSlug } = await params
-  const session = await auth()
+  const user = await getCurrentUser()
 
-  if (!session?.user) {
+  if (!user || !user.gymId || !user.gymSlug) {
     redirect("/login")
   }
-
-  const user = session.user as any
   if (user.gymSlug !== gymSlug) {
     redirect(`/${user.gymSlug}/me`)
   }

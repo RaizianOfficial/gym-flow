@@ -65,3 +65,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 })
+
+export async function getCurrentUser() {
+  const session = await auth()
+  if (!session?.user?.email) {
+    return null
+  }
+
+  const user = session.user as any
+  if (user.gymId && user.gymSlug) {
+    return user
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    include: { gym: true }
+  })
+
+  if (!dbUser) {
+    return null
+  }
+
+  return {
+    ...user,
+    id: dbUser.id,
+    role: dbUser.role,
+    gymId: dbUser.gymId,
+    gymSlug: dbUser.gym?.slug || null
+  }
+}
+

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import KpiCard from "@/components/dashboard/kpi-card"
@@ -12,13 +12,12 @@ interface PageProps {
 
 export default async function DashboardPage({ params }: PageProps) {
   const { gymSlug } = await params
-  const session = await auth()
+  const user = await getCurrentUser()
 
-  if (!session?.user) {
+  if (!user || !user.gymId || !user.gymSlug) {
     redirect("/login")
   }
 
-  const user = session.user as any
   if (user.gymSlug !== gymSlug) {
     redirect(`/${user.gymSlug}/dashboard`)
   }
