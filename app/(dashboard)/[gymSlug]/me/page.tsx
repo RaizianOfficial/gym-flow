@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Badge from "@/components/ui/badge"
 import { Calendar, CheckSquare, Clock, AlertTriangle, Dumbbell } from "lucide-react"
+import MemberScanner from "@/components/members/MemberScanner"
 
 interface PageProps {
   params: Promise<{ gymSlug: string }>
@@ -127,6 +128,7 @@ export default async function MemberPortalPage({ params }: PageProps) {
             <Calendar className="h-4 w-4" />
             Expires on {formattedExpiry}
           </span>
+          <MemberScanner gymSlug={gymSlug} />
         </div>
 
         {/* Total Attendance Card */}
